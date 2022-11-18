@@ -1,6 +1,7 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { Button, Divider } from "@mantine/core";
 import { Container } from "@mantine/core";
+import { DataGrid } from "@mui/x-data-grid";
 import axios from "axios";
 import { Grid, Typography } from "@mui/material";
 import "./App.css";
@@ -11,10 +12,18 @@ function App() {
   const [count, setCount] = useState(0);
   const [getData, setData] = useState([]);
 
+  const [page, setPage] = React.useState(1);
+  console.log(page);
+  const onPageChange = () => {};
+  const [pageSize, setPageSize] = React.useState(10);
+  console.log(pageSize);
+
   const getSomeData = async () => {
-    const data = await axios.get(apiEndPoint);
-    setData(data.data);
-    console.log(getData);
+    const data = await axios.get(
+      `https://jsonplaceholder.typicode.com/posts?_page=${page}&_limit=${pageSize}`
+    );
+    setData(data?.data);
+    //console.log(getData);
   };
 
   // add data handler
@@ -42,7 +51,8 @@ function App() {
 
   useEffect(() => {
     getSomeData();
-  }, []);
+    console.log(getData);
+  }, [page, pageSize]);
 
   if (!getData) {
     return (
@@ -51,6 +61,12 @@ function App() {
       </>
     );
   }
+
+  const cols = [
+    { field: "id", headerName: "ID", width: 150 },
+    { field: "title", headerName: "Title", width: 150 },
+    { field: "body", headerName: "Body", flex: 1 },
+  ];
 
   return (
     <div className="App">
@@ -84,7 +100,8 @@ function App() {
           background: "#0057",
         }}
       />
-      {getData?.map((data) => (
+
+      {/* {getData?.map((data) => (
         <div style={{ borderBottom: "1px dotted black" }}>
           <Grid container spacing={3} sx={{ my: 1 }} alignItems="center">
             <Grid item xs={8}>
@@ -103,17 +120,27 @@ function App() {
               <Button color="red">Delete</Button>
             </Grid>
             <Divider />
-            {/* <Divider
-              sx={{
-                // marginTop: "1.5rem", 
-                // marginBottom: "1.5rem",
-                height: "0.2rem",
-                background: "#0057",
-              }}
-            /> */}
           </Grid>
         </div>
-      ))}
+      ))} */}
+      <h1>{page}</h1>
+      <div style={{ height: 700, width: "100%", padding: "2rem 0px 2rem 0px" }}>
+        <DataGrid
+          getRowId={(x) => x?.id}
+          autoHeight
+          rows={getData ? getData : []}
+          columns={cols}
+          rowsPerPageOptions={[10, 20, 50]}
+          rowCount={100}
+          pagination
+          paginationMode="server"
+          page={page - 1}
+          pageSize={pageSize}
+          onPageChange={(newPage) => setPage(newPage + 1)}
+          onPageSizeChange={(newPageSize) => setPageSize(newPageSize)}
+        />
+      </div>
+
       <Divider />
     </div>
   );
